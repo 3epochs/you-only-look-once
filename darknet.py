@@ -65,7 +65,7 @@ class Darknet(nn.Module):
                 x = predict_transform(x, inp_dim, anchors, num_classes, CUDA)
                 if not write:
                     detections = x
-                    write = 12
+                    write = 1
                 else:
                     detections = torch.cat((detections, x), 1)
             outputs[i] = x
@@ -92,6 +92,7 @@ class Darknet(nn.Module):
 
                 if batch_normalize:
                     bn = model[1]
+
                     num_bn_biases = bn.bias.numel()
                     bn_biases = torch.from_numpy(weights[ptr: ptr + num_bn_biases])
                     ptr += num_bn_biases
@@ -112,7 +113,7 @@ class Darknet(nn.Module):
 
                     bn.bias.data.copy_(bn_biases)
                     bn.weight.data.copy_(bn_weights)
-                    bn.running_mean.copy(bn_running_mean)
+                    bn.running_mean.copy_(bn_running_mean)
                     bn.running_var.copy_(bn_running_var)
 
                 else:
@@ -179,6 +180,7 @@ def create_modules(blocks):
             except:
                 batch_normalize = 0
                 bias = True
+
             filters = int(x['filters'])
             padding = int(x['pad'])
             kernel_size = int(x['size'])
@@ -202,7 +204,7 @@ def create_modules(blocks):
 
         elif x['type'] == 'upsample':
             stride = int(x['stride'])
-            upsample = nn.Upsample(scale_factor=stride, mode='bilinear')
+            upsample = nn.Upsample(scale_factor=stride, mode='nearest')
             module.add_module('upsample_{0}'.format(idx), upsample)
 
         elif x['type'] == 'route':
@@ -261,10 +263,10 @@ class EmptyLayer(nn.Module):
 # # test
 # blocks = parse_cfg('cfg/yolov3.cfg')
 # print(create_modules(blocks))
-
-model = Darknet("cfg/yolov3.cfg")
-model.load_weights('yolov3.weights')
-inp = get_test_input()
-pred = model(inp, torch.cuda.is_available())
-print(pred)
-print(pred.size())
+#
+# model = Darknet("cfg/yolov3.cfg")
+# model.load_weights('yolov3.weights')
+# inp = get_test_input()
+# pred = model(inp, torch.cuda.is_available())
+# print(pred)
+# print(pred.size())
