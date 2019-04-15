@@ -9,6 +9,11 @@ import cv2
 
 
 def unique(tensor):
+    """
+    multiple true detections can be made of the same class, this func to address this issue
+    :param tensor: output
+    :return: unique tensor
+    """
     tensor_np = tensor.cpu().numpy()
     unique_np = np.unique(tensor_np)
     unique_tensor = torch.from_numpy(unique_np)
@@ -20,9 +25,10 @@ def unique(tensor):
 
 def bbox_iou(box1, box2):
     """
-    Returns the IoU of two bounding boxes
-
-
+    calculate iou
+    :param box1: predicting box 1
+    :param box2: predicting box 2
+    :return: intersection area / total area
     """
     # Get the coordinates of bounding boxes
     b1_x1, b1_y1, b1_x2, b1_y2 = box1[:, 0], box1[:, 1], box1[:, 2], box1[:, 3]
@@ -35,8 +41,8 @@ def bbox_iou(box1, box2):
     inter_rect_y2 = torch.min(b1_y2, b2_y2)
 
     # Intersection area
-    inter_area = torch.clamp(inter_rect_x2 - inter_rect_x1 + 1, min=0) * torch.clamp(inter_rect_y2 - inter_rect_y1 + 1,
-                                                                                     min=0)
+    inter_area = torch.clamp(inter_rect_x2 - inter_rect_x1 + 1, min=0) * \
+                 torch.clamp(inter_rect_y2 - inter_rect_y1 + 1, min=0)
 
     # Union Area
     b1_area = (b1_x2 - b1_x1 + 1) * (b1_y2 - b1_y1 + 1)
@@ -48,6 +54,16 @@ def bbox_iou(box1, box2):
 
 
 def predict_transform(prediction, inp_dim, anchors, num_classes, CUDA=True):
+    """
+    turn detection map to 2D tensor
+    :param prediction: our output of model forward
+    :param inp_dim: input image dimension, in our case 416 * 416
+    :param anchors: anchors
+    :param num_classes: num of classes, in coco dataset, 80
+    :param CUDA: whether use gpu to accelerate computing
+    :return: a 2-D tensor where each row of the tensor
+    corresponds to attributes of a bounding box
+    """
     batch_size = prediction.size(0)
     stride = inp_dim // prediction.size(2)
     grid_size = inp_dim // stride
@@ -96,6 +112,14 @@ def predict_transform(prediction, inp_dim, anchors, num_classes, CUDA=True):
 
 
 def write_results(prediction, confidence, num_classes, nms_conf=0.4):
+    """
+    subject our output objectness score threshold and non-maximal suppression
+    :param prediction: our output
+    :param confidence: objectness score threshold
+    :param num_classes: num of classses
+    :param nms_conf: non-maximal suppression threshold
+    :return:
+    """
     conf_mask = (prediction[:, :, 4] > confidence).float().unsqueeze(2)
     prediction = prediction * conf_mask
 
@@ -114,7 +138,6 @@ def write_results(prediction, confidence, num_classes, nms_conf=0.4):
         image_pred = prediction[ind]  # image Tensor
         # confidence threshholding
         # NMS
-
         max_conf, max_conf_score = torch.max(image_pred[:, 5:5 + num_classes], 1)
         max_conf = max_conf.float().unsqueeze(1)
         max_conf_score = max_conf_score.float().unsqueeze(1)
@@ -129,14 +152,12 @@ def write_results(prediction, confidence, num_classes, nms_conf=0.4):
 
         if image_pred_.shape[0] == 0:
             continue
-        #
 
         # Get the various classes detected in the image
         img_classes = unique(image_pred_[:, -1])  # -1 index holds the class index
 
         for cls in img_classes:
             # perform NMS
-
             # get the detections with one particular class
             cls_mask = image_pred_ * (image_pred_[:, -1] == cls).float().unsqueeze(1)
             class_mask_ind = torch.nonzero(cls_mask[:, -2]).squeeze()
@@ -185,7 +206,7 @@ def write_results(prediction, confidence, num_classes, nms_conf=0.4):
 
 
 def letterbox_image(img, inp_dim):
-    '''resize image with unchanged aspect ratio using padding'''
+    # resize image with unchanged aspect ratio using padding
     img_w, img_h = img.shape[1], img.shape[0]
     w, h = inp_dim
     new_w = int(img_w * min(w / img_w, h / img_h))
@@ -212,6 +233,11 @@ def prep_image(img, inp_dim):
 
 
 def load_classes(namesfile):
+    """
+    loading classes names of coco dataset
+    :param namesfile: file contains all class names
+    :return: class names
+    """
     fp = open(namesfile, "r")
     names = fp.read().split("\n")[:-1]
     return names
