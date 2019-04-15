@@ -15,7 +15,7 @@ YOLO v3 algorithm implemented with PyTorch
 
 
 # reference
-https://arxiv.org/pdf/1506.02640.pdf
-https://arxiv.org/pdf/1612.08242.pdf
-https://pjreddie.com/media/files/papers/YOLOv3.pdf
-https://blog.paperspace.com/how-to-implement-a-yolo-object-detector-in-pytorch/
+https://arxiv.org/pdf/1506.02640.pdf \
+https://arxiv.org/pdf/1612.08242.pdf \
+https://pjreddie.com/media/files/papers/YOLOv3.pdf \
+https://blog.paperspace.com/how-to-implement-a-yolo-object-detector-in-pytorch/ 
