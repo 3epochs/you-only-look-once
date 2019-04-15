@@ -11,10 +11,10 @@ YOLO v3 algorithm implemented with PyTorch
 # instruction
 1. download weight file at this site(https://pjreddie.com/media/files/yolov3.weights), which is based on COCO dataset.
 2. In terminal(source activate your pytorch env first): `python detector.py --images xxxx.png(your image file)  --det det` to do object detection on picture.
-3. video detection: TODO
+3. video detection
 
 
-# reference
+# references
 https://arxiv.org/pdf/1506.02640.pdf \
 https://arxiv.org/pdf/1612.08242.pdf \
 https://pjreddie.com/media/files/papers/YOLOv3.pdf \
