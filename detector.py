@@ -16,7 +16,10 @@ import random
 
 
 def arg_parse():
-
+    """
+    parse arguments to the detect module
+    :return: parsed args
+    """
     parser = argparse.ArgumentParser(description='YOLO v3 Detection Module')
     parser.add_argument('--images', dest='images', help=
                         'Image / Directory contains images to perform detection upon',
@@ -153,6 +156,12 @@ draw = time.time()
 
 
 def write(x, results):
+    """
+    add bounding box to img
+    :param x: img
+    :param results: output of our model
+    :return: img with bounding box
+    """
     c1 = tuple(x[1:3].int())
     c2 = tuple(x[3:5].int())
     img = results[int(x[0])]
